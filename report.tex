@@ -1,0 +1,189 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+
+\title{Coursework-Data Managment}
+\author{mg5u19 }
+\date{May 2020}
+
+\begin{document}
+
+\maketitle
+
+\section{The Relational Model}
+
+\subsection{EX1}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+         Data Set & Data Type  \\
+         \hline
+         dateRep & int  \\
+         \hline
+         day & int  \\
+         \hline
+         month & int    \\
+         \hline
+         year & int     \\
+         \hline
+         cases & int    \\
+         \hline
+         deaths & int   \\
+         \hline
+         countriesAndTerritories & string   \\
+         \hline
+         geoId & string     \\
+         \hline
+         countryterritoryCode & string      \\
+         \hline
+         popData2018 & int      \\
+         \hline
+         continentExp & string      \\
+         \hline
+    \end{tabular}
+    \caption{Dataset Table}
+    \label{tab:my_label}
+\end{table}
+
+\subsection{EX2}
+Functional Dependencies:
+\newline
+\newline
+$\{dateRep\}  \longleftarrow \longrightarrow  \{day,month,year\}$
+\newline
+\newline
+$\{countriesAndTerritoryCode,geoId\}  \longrightarrow  \{countriesAndTerritories,continentExp,popData2018\}$
+\newline
+\newline
+$\{countriesAndTerritoryCode,dateRep\}  \longrightarrow  \{cases,deaths,\}$
+\newline
+\newline
+
+\subsection{EX3}
+Potential candidate keys:
+\newline
+geoId and countryterritoryCode.
+\newline
+\newline
+
+\subsection{EX4}
+Primary key:
+\newline
+The primary key should be \{countriesAndTerritories, dataRep\} because it is compact, unique and definite for every country. From it we can access the country code, continent, popData, geoId, cases and deaths.
+\newline
+\newline
+
+\section{Normalisation}
+\subsection{EX5}
+Partial key dependencies:
+\newline
+\newline
+\{countriesAndTerritories\} $\longrightarrow$ \{continentExp,geoID,popData2018,countryTerritoryCode\}
+\newline
+\newline
+$\{dateRep\}  \longrightarrow  \{day,month,year\}$
+\newline
+\newline
+Additional Relations:
+\newline
+\newline
+\{countriesAndTerritories,dateRep\} $\longrightarrow$ \{cases,deaths\}
+\newline
+\newline
+\subsection{EX6}
+In order to convert the relation into  a 2nd normal form we need to distribute the data into three tables: one table with key countriesAndTerritories and attributes countryTerritoryCode, continentExp, geoId and popData2018, another with key dateRep and attributes day, month and year, and last one with key {dateRep, countriesAndTerritories} with attributes cases and deaths.
+\newline
+\newline
+\subsection{EX7}
+Transitional Dependencies:
+\newline
+\newline
+\{geoId\} \longrightarrow \{continentExp,countryTerritoryCode, popData2018\}
+\newline
+\newline
+\{countryTerritoryCode\} \longrightarrow \{popData2018\}
+\newline
+\newline
+\subsection{EX8}
+
+At the end I have 5 tables: 
+\newline
+\begin{enumerate}
+    \item Date Table - \{dateRep, day, month, year\}, Primary Key - dateRep
+    \item Cases Table - \{dateRep, countriesAndTerritories, cases, deaths\}, Primary Key - dateRep and countriesAndTerritories
+    \item Countries Table - \{countriesAndTerritories, geoId\}, Primary Key - countriesAndTerritories
+    \item Locations Table - \{geoId, countryTerritoryCode, ContinentExp\}, Primary Key - geoId
+    \item Population Table - \{countryTerritoryCode, popData2018\}, Primary Key - countryTerritoryCode
+\end{enumerate}
+
+    I distributed the data in that way because it is the most optimal way to access and find the information needed. I decided to separate the countryTerritoryCode and popData2018 in a new table because when I don't have a code, there is no popData2018 available.
+    \newline
+    \newline
+\subsection{EX9}
+Yes, my relation is in Boyce-Codd Normal Form because I don't have any partial key dependencies, nor any transitive dependencies. Also, the non-prime keys are only dependent on the prime ones.
+\newline
+\newline
+
+\section{Modelling}
+\newline
+\subsection{EX11}
+I have included an index on the countriesAndTerritories column on the Cases table in order to search for the country I need faster and more efficient.
+\newline
+\section{Querying}
+\newline
+\subsection{EX14}
+SELECT SUM(cases),SUM(deaths)
+FROM Cases
+\newline
+\subsection{EX15}
+SELECT dateRep,cases\newline
+FROM Cases\newline
+WHERE countriesAndTerritories = 'United\_Kingdom'\newline
+ORDER BY SUBSTR(dateRep,7,4),SUBSTR(dateRep,4,2),\newline
+         SUBSTR(dateRep,1,2) ASC;\newline
+\newline
+\subsection{EX16}
+SELECT Locations.continentExp,Cases.dateRep,\newline
+    SUM(Cases.cases) AS sumOfCases,SUM(Cases.deaths) AS sumOfDeaths\newline
+FROM Cases\newline
+LEFT JOIN Countries\newline
+    ON Cases.countriesAndTerritories = Countries.countriesAndTerritories\newline
+LEFT JOIN Locations\newline
+    ON Locations.geoId = Countries.geoId\newline
+GROUP BY continentExp,dateRep\newline
+ORDER BY SUBSTR(dateRep,7,4),SUBSTR(dateRep,4,2),\newline
+         SUBSTR(dateRep,1,2) ASC;
+\newline
+\subsection{EX17}
+SELECT Cases.countriesAndTerritories,\newline
+       CAST(SUM(Cases.cases)AS FLOAT)/CAST(Populations.popData2018 AS FLOAT)*100\newline
+       AS percentageOfCases,\newline
+       CAST(SUM(Cases.deaths)AS FLOAT)/CAST(Populations.popData2018 AS FLOAT)*100\newline
+       AS percentageOfDeaths\newline
+FROM Cases\newline
+LEFT JOIN Countries\newline
+    ON Cases.countriesAndTerritories = Countries.countriesAndTerritories\newline
+LEFT JOIN Locations\newline
+    ON Countries.geoId = Locations.geoId\newline
+LEFT JOIN Populations\newline
+    ON Populations.countryTerritoryCode = Locations.countryTerritoryCode\newline
+GROUP BY Cases.countriesAndTerritories;\newline
+\subsection{EX18}
+SELECT countriesAndTerritories,\newline
+       CAST(deaths AS FLOAT)/CAST(cases AS FLOAT) AS percentDeathsOfPopulation\newline
+FROM Cases\newline
+ORDER BY percentDeathsOfPopulation DESC\newline
+LIMIT 10;\newline
+\subsection{EX19}
+SELECT dateRep,countriesAndTerritories,cases,deaths,\newline
+       SUM (cases) OVER(ORDER BY SUBSTR(dateRep,7,4),\newline
+            SUBSTR(dateRep,4,2),\newline
+            SUBSTR(dateRep,1,2) ASC) AS sumOfCases,\newline
+       SUM(deaths) OVER(ORDER BY SUBSTR(dateRep,7,4),\newline
+            SUBSTR(dateRep,4,2),\newline
+            SUBSTR(dateRep,1,2) ASC) AS sumOfDeaths\newline
+FROM Cases\newline
+WHERE countriesAndTerritories = 'United\_Kingdom';\newline
+
+\end{document}
